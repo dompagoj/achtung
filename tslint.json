@@ -1,6 +1,6 @@
 {
   "extends": ["tslint:latest"],
-  "defaultSeverity": "error",
+  "defaultSeverity": "warning",
   "rules": {
     "quotemark": [true, "single"],
     "eofline": true,
@@ -10,7 +10,8 @@
     "object-literal-sort-keys": false,
     "interface-name": false,
     "newline-before-return": true,
-    "arrow-parens": false
+    "arrow-parens": false,
+    "max-line-length" : false
   },
   "linterOptions": {
     "exclude": ["node_modules/"]
