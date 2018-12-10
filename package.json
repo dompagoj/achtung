@@ -20,6 +20,7 @@
     "browserify": "^16.2.3",
     "phaser": "^3.15.1",
     "tsify": "^4.0.1",
+    "tslint": "^5.11.0",
     "typescript": "^3.2.2",
     "watchify": "^3.11.0"
   }
