@@ -1,9 +1,15 @@
 import { Display, GameObjects, Geom, Input, Scene } from 'phaser'
+import { Scene1 } from '../scenes/Scene1'
+import { Coords } from './Coords'
+
+function cantor_pair(a: number, b: number) {
+  return ((a + b) * (a + b + 1)) / 2 + b
+}
 
 export class Snake extends Phaser.GameObjects.Sprite {
-  public readonly speedModifier: number = 100.5
-  public readonly angleIncrement = this.speedModifier / 20
-  public readonly lineCompensation = this.speedModifier * 1.5
+  public speedModifier: number = 1.5
+  public angleIncrement = this.speedModifier / 20
+  public lineCompensation = this.speedModifier * 1.5
   public lineWidth: number = 10
 
   public keyLeft: Input.Keyboard.Key
@@ -16,10 +22,15 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
   public graphics: GameObjects.Graphics
 
-  constructor(scene: Scene) {
-    super(scene, 20, 20, 'snakeHead')
-    this.setScale(0.3)
-    this.setPosition(50, 50)
+  public lastLocation: Coords
+  public currentLocation: Coords
+
+  public boundingCircle: Geom.Circle
+
+  constructor(scene: Scene1, keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
+    super(scene, Math.random() % 400, Math.random() % 400, 'snakeHead')
+    this.setScale(0.1)
+    // this.setPosition(Math.random() % 400, Math.random() % 400)
 
     this.scene = scene
 
@@ -27,7 +38,7 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
     this.graphics = scene.add.graphics({ lineStyle: { width: this.lineWidth, color } })
 
-    this.init_keys()
+    this.init_keys(keyLeft, keyRight)
     this.init_line_creation()
 
     this.angle = Math.random() % 360
@@ -42,9 +53,9 @@ export class Snake extends Phaser.GameObjects.Sprite {
     this.angle_changed()
   }
 
-  public init_keys() {
-    this.keyLeft = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
-    this.keyRight = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
+  public init_keys(keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
+    this.keyLeft = this.scene.input.keyboard.addKey(keyLeft)
+    this.keyRight = this.scene.input.keyboard.addKey(keyRight)
   }
 
   public create_line(x1: number, y1: number, x2: number, y2: number) {
@@ -52,10 +63,14 @@ export class Snake extends Phaser.GameObjects.Sprite {
   }
 
   public create_line_default() {
-    const xCompensation = Math.cos(this.angle) * this.lineCompensation
-    const yCompensation = Math.sin(this.angle) * this.lineCompensation
+    const xCompensation = Math.cos(this.angle) * (this.lineCompensation - this.getBounds().width / 2.5)
+    const yCompensation = Math.sin(this.angle) * (this.lineCompensation - this.getBounds().height / 2.5)
 
-    return this.create_line(this.xBeforeAngleChange, this.yBeforeAngleChange, this.x + xCompensation, this.y + yCompensation)
+    return this.create_line(this.xBeforeAngleChange - xCompensation, this.yBeforeAngleChange - yCompensation, this.x + xCompensation, this.y + yCompensation)
+  }
+
+  public collision_check(lines: Geom.Line[]) {
+
   }
 
   public extend_line() {
@@ -114,7 +129,26 @@ export class Snake extends Phaser.GameObjects.Sprite {
     }
   }
 
+  public moved_a_pixel() {
+    return this.lastLocation !== this.currentLocation
+  }
+
+  public kill() {
+    this.destroy()
+  }
+
+  public increase_parameters() {
+    this.speedModifier += 0.0015
+    this.angleIncrement = this.speedModifier / 20
+    this.lineCompensation = this.speedModifier * 1.5
+    this.lineWidth += 1.1
+  }
+
   public move() {
+    // this.increase_parameters()
+
+    this.lastLocation = this.currentLocation
+
     this.change_angle()
 
     const offsetX = Math.cos(this.angle) * this.speedModifier
@@ -123,5 +157,9 @@ export class Snake extends Phaser.GameObjects.Sprite {
     this.setPosition(this.x + offsetX, this.y + offsetY)
 
     this.out_of_bounds_check()
+
+    this.currentLocation = new Coords(this.x, this.y)
+
+    return this.currentLocation
   }
 }
