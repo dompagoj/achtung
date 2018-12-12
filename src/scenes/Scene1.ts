@@ -1,29 +1,3 @@
-<<<<<<< HEAD
-import { Scene } from 'phaser'
-import { Snake } from '../Objects/Snake'
-
-export class Scene1 extends Scene {
-  // public snakes: Snake[] = []
-  public snake: Snake
-
-  public constructor() {
-    super({ key: 'Scene1' })
-  }
-
-  public preload() {
-    // this.load.image('snakeHead', 'assets/sprites/snakeHead.png')
-  }
-
-  public create() {
-    this.snake = new Snake(this)
-    this.add.existing(this.snake)
-  }
-
-  public update() {
-    if (this.snake.isAlive) {
-      this.snake.move()
-      this.snake.update_graphics()
-=======
 import { GameObjects, Geom, Input, Math as PMath, Scene } from 'phaser'
 import * as Collections from 'typescript-collections'
 import { Coords } from '../Objects/Coords'
@@ -112,7 +86,6 @@ export class Scene1 extends Scene {
       const newSquare = this.snakes[i].move()
       this.snakes[i].update_graphics()
       this.collision_check(i, newSquare)
->>>>>>> feature/collision2
     }
   }
 }
