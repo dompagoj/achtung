@@ -21,6 +21,12 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
   public isAlive = true
 
+  public lineGap = false
+  public lineGapChance = 0.002
+  public lineGapModifier = 30
+  public minLineGapTimeOutTime = this.lineGapModifier / this.speedModifier * this.collisionCircleRadius
+  public maxLineGapTimeOutTime = this.lineGapModifier / this.speedModifier * this.collisionCircleRadius * 4
+
   private keyLeft: Input.Keyboard.Key
   private keyRight: Input.Keyboard.Key
 
@@ -52,7 +58,7 @@ export class Snake extends Phaser.GameObjects.Sprite {
     this.graphicsLine.clear()
     this.graphicsCircle.clear()
     this.graphicsCircle.strokeCircleShape(this.collisionCircle)
-    this.lines.forEach(line => this.graphicsLine.strokeLineShape(line)) // sketchy
+    this.lines.forEach(line => this.graphicsLine.strokeLineShape(line))
   }
 
   public init_keys(keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
@@ -86,7 +92,9 @@ export class Snake extends Phaser.GameObjects.Sprite {
     if (this.isAlive === false)
       return
 
-    // this.increase_parameters()
+    this.line_gap()
+
+    this.increase_parameters()
 
     this.change_angle()
 
@@ -97,10 +105,6 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
     this.update_collision_circle_position()
     this.out_of_bounds_check()
-  }
-
-  public create_pixel(x: number, y: number) {
-    this.lines.push(new Phaser.Geom.Line(x, y, x + 1, y + 1))
   }
 
   private getRandomColor() {
@@ -115,11 +119,33 @@ export class Snake extends Phaser.GameObjects.Sprite {
     return new Phaser.Geom.Line(x1, y1, x2, y2)
   }
 
+  private toggle_line_gap() {
+    this.angle_changed()
+    this.lineGap = !this.lineGap
+  }
+
+  private roll_for_line_gap() {
+    return Math.random() < this.lineGapChance
+  }
+
+  private line_gap() {
+    if (this.lineGap === false && this.roll_for_line_gap()) {
+      this.toggle_line_gap()
+      setTimeout(() => {this.toggle_line_gap()}, Math.random() * (this.maxLineGapTimeOutTime - this.minLineGapTimeOutTime) + this.minLineGapTimeOutTime)
+    }
+  }
+
   private extend_line() {
+    if (this.lineGap)
+      return
+
     this.lines[this.lines.length - 1] = this.create_line_default()
   }
 
   private add_line() {
+    if (this.lineGap)
+      return
+
     this.lines.push(this.create_line_default())
   }
 

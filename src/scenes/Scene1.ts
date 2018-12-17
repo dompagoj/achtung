@@ -16,12 +16,7 @@ export class Scene1 extends Scene {
     this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.LEFT, Phaser.Input.Keyboard.KeyCodes.RIGHT, 200, 200))
     this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.A, Phaser.Input.Keyboard.KeyCodes.D, 200, 400))
     this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.K, Phaser.Input.Keyboard.KeyCodes.L, 200, 600))
-
-    // for (let i = 0; i < 2; i++) {
-    //   if (i === 1) {
-    //   } else {
-    //   }
-
+    
     this.snakes.forEach((snake) => {
       this.add.existing(snake)
     })
@@ -69,7 +64,6 @@ export class Scene1 extends Scene {
             snake.graphicsCircle.lineStyle(1, 0xff00000)
             snake.graphicsCircle.strokeCircleShape(snake.collisionCircle)
             this.kill_snake(snake)
-
           }
         }
       }
