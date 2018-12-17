@@ -12,20 +12,10 @@ export class Scene1 extends Scene {
     super({ key: 'Scene1' })
   }
 
-  public create_pixel_array() {
-    const { height, width } = this.game.canvas
-
-    for (let i = 0; i < width; i++) {
-      this.pixels.push([])
-      for (let j = 0; j < height; j++) {
-        this.pixels[i].push(false)
-      }
-    }
-  }
-
   public create_snakes() {
-    this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.LEFT, Phaser.Input.Keyboard.KeyCodes.RIGHT))
-    // this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.A, Phaser.Input.Keyboard.KeyCodes.D))
+    this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.LEFT, Phaser.Input.Keyboard.KeyCodes.RIGHT, 200, 200))
+    this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.A, Phaser.Input.Keyboard.KeyCodes.D, 200, 400))
+    this.snakes.push(new Snake(this, Phaser.Input.Keyboard.KeyCodes.K, Phaser.Input.Keyboard.KeyCodes.L, 200, 600))
 
     // for (let i = 0; i < 2; i++) {
     //   if (i === 1) {
@@ -39,53 +29,57 @@ export class Scene1 extends Scene {
 
   public preload() {
     this.load.image('snakeHead', 'assets/sprites/snakeHead.png')
-    this.create_pixel_array()
   }
 
   public create() {
     this.create_snakes()
   }
 
-  public add_coordinates(newSquare: Coords) {
-    this.pixels[newSquare.x][newSquare.y] = true
+  public kill_snake(snake: Snake) {
+    // this.snakes = this.snakes.filter(s => s.id !== snake.id)
+    snake.kill()
+
+    this.end_game()
   }
 
-  public print_pixels() {
-    for (let i = 0; i < this.pixels.length; i++) {
-      for (let j = 0; j < this.pixels[i].length; j++) {
-        console.log(this.pixels[i][j])
-      }
-    }
+  public end_game() {
+    const isAliveCount = this.snakes.reduce((acc, snake) => {
+      if (snake.isAlive)
+        acc++
+
+      return acc
+     }, 0)
+
+    if (isAliveCount === 1)
+      setTimeout(() => {location.reload()}, 3000)
   }
 
-  // public collision_check(i: number, newSquare: Coords) {
-  //   if (this.pixels[newSquare.x][newSquare.y] === false) {
-  //     this.add_coordinates(newSquare)
-  //   } else {
-  //     const snake = this.snakes[i]
-  //     this.snakes = this.snakes.splice(i, 1)
-  //     snake.kill()
-  //   }
-  // }
-
-  public collision_check(i: number, newSquare: Coords) {
-    for (const snake of this.snakes) {
+  public collision_check(snake: Snake) {
       for (const otherSnake of this.snakes) {
-        for (let i = 0; i < otherSnake.lines.length - 10; i++) {
-          if (Phaser.Geom.Intersects.LineToRectangle(otherSnake.lines[i], snake.getBounds())) {
-            snake.kill()
+        if (snake !== otherSnake && Geom.Intersects.CircleToCircle(snake.collisionCircle, otherSnake.collisionCircle)) {
+          this.kill_snake(snake)
+          this.kill_snake(otherSnake)
+        }
+
+        for (let i = 0; i < otherSnake.lines.length; i++) {
+          if (Geom.Intersects.LineToCircle(otherSnake.lines[i], snake.collisionCircle)) {
+            otherSnake.graphicsLine.lineStyle(2, 0xff00000)
+            otherSnake.graphicsLine.strokeLineShape(otherSnake.lines[i])
+
+            snake.graphicsCircle.lineStyle(1, 0xff00000)
+            snake.graphicsCircle.strokeCircleShape(snake.collisionCircle)
+            this.kill_snake(snake)
+
           }
         }
       }
-    }
-
   }
 
-  public update() {
+  public update(time: number) {
     for (let i = 0; i < this.snakes.length; i++) {
-      const newSquare = this.snakes[i].move()
+      this.snakes[i].move()
       this.snakes[i].update_graphics()
-      this.collision_check(i, newSquare)
+      this.collision_check(this.snakes[i])
     }
   }
 }

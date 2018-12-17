@@ -1,25 +1,25 @@
 import { Display, GameObjects, Geom, Input, Scene } from 'phaser'
+import {v4} from 'uuid'
 import { Scene1 } from '../scenes/Scene1'
 import { Coords } from './Coords'
 
-function cantor_pair(a: number, b: number) {
-  return ((a + b) * (a + b + 1)) / 2 + b
-}
-
 export class Snake extends Phaser.GameObjects.Sprite {
-  public speedModifier: number = 1.5
-  public angleIncrement = this.speedModifier / 20
-  public lineCompensation = this.speedModifier * 1.5
+  public id: string = v4()
+  public speedModifier: number = 3
+  public angleIncrement = this.speedModifier / 40
+  public lineCompensation = this.speedModifier * 3
   public lineWidth: number = 10
 
-  public graphics: GameObjects.Graphics
+  public graphicsLine: GameObjects.Graphics
+  public graphicsCircle: GameObjects.Graphics
 
-  public lastLocation: Coords
-  public currentLocation: Coords
-
-  public boundingCircle: Geom.Circle
+  public collisionCircle: Geom.Circle
+  public collisionCircleOffset = 1.2 * this.lineCompensation + 2
+  public collisionCircleRadius = 5
 
   public lines: Geom.Line[] = []
+
+  public isAlive = true
 
   private keyLeft: Input.Keyboard.Key
   private keyRight: Input.Keyboard.Key
@@ -27,22 +27,32 @@ export class Snake extends Phaser.GameObjects.Sprite {
   private xBeforeAngleChange: number
   private yBeforeAngleChange: number
 
-  constructor(scene: Scene1, keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
-    super(scene, Math.random() % 400, Math.random() % 400, 'snakeHead')
+  constructor(scene: Scene1, keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes, x: number, y: number) {
+    super(scene, x, y, 'snakeHead')
+
     this.setScale(0.1)
-    // this.setPosition(Math.random() % 400, Math.random() % 400)
+
+    this.init_collision_circle()
 
     this.scene = scene
 
-    this.graphics = scene.add.graphics({ lineStyle: { width: this.lineWidth, color: this.getRandomColor() } })
+    this.graphicsLine = scene.add.graphics({ lineStyle: { width: this.lineWidth, color: this.getRandomColor() } })
+    this.graphicsCircle = scene.add.graphics({ lineStyle: { width: 1, color: 0x0000ff } })
 
     this.init_keys(keyLeft, keyRight)
     this.init_line_creation()
   }
 
+  public init_collision_circle() {
+    this.collisionCircle = new Geom.Circle(this.x, this.y, this.collisionCircleRadius)
+    this.update_collision_circle_position()
+  }
+
   public update_graphics() {
-    this.graphics.clear()
-    this.lines.forEach(line => this.graphics.strokeLineShape(line)) // sketchy
+    this.graphicsLine.clear()
+    this.graphicsCircle.clear()
+    this.graphicsCircle.strokeCircleShape(this.collisionCircle)
+    this.lines.forEach(line => this.graphicsLine.strokeLineShape(line)) // sketchy
   }
 
   public init_keys(keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
@@ -51,20 +61,14 @@ export class Snake extends Phaser.GameObjects.Sprite {
   }
 
   public create_line_default() {
-    const xCompensation = Math.cos(this.angle) * (this.lineCompensation - this.getBounds().width / 2.5)
-    const yCompensation = Math.sin(this.angle) * (this.lineCompensation - this.getBounds().height / 2.5)
+    const xCompensation = Math.cos(this.angle) * this.lineCompensation
+    const yCompensation = Math.sin(this.angle) * this.lineCompensation
 
-    return this.create_line(this.xBeforeAngleChange - xCompensation, this.yBeforeAngleChange - yCompensation, this.x + xCompensation, this.y + yCompensation)
-  }
-
-  public collision_check(lines: Geom.Line[]) {}
-
-  public moved_a_pixel() {
-    return this.lastLocation !== this.currentLocation
+    return this.create_line(this.xBeforeAngleChange, this.yBeforeAngleChange, this.x + xCompensation, this.y + yCompensation)
   }
 
   public kill() {
-    this.destroy()
+    this.isAlive = false
   }
 
   public increase_parameters() {
@@ -74,10 +78,15 @@ export class Snake extends Phaser.GameObjects.Sprite {
     this.lineWidth += 1.1
   }
 
-  public move() {
-    // this.increase_parameters()
+  public update_collision_circle_position() {
+    this.collisionCircle.setPosition(this.x + Math.cos(this.angle) * this.collisionCircleOffset, this.y + Math.sin(this.angle) * this.collisionCircleOffset)
+  }
 
-    this.lastLocation = this.currentLocation
+  public move() {
+    if (this.isAlive === false)
+      return
+
+    // this.increase_parameters()
 
     this.change_angle()
 
@@ -86,11 +95,12 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
     this.setPosition(this.x + offsetX, this.y + offsetY)
 
+    this.update_collision_circle_position()
     this.out_of_bounds_check()
+  }
 
-    this.currentLocation = new Coords(this.x, this.y)
-
-    return this.currentLocation
+  public create_pixel(x: number, y: number) {
+    this.lines.push(new Phaser.Geom.Line(x, y, x + 1, y + 1))
   }
 
   private getRandomColor() {
@@ -124,20 +134,16 @@ export class Snake extends Phaser.GameObjects.Sprite {
     let angleChanged = false
 
     if (this.keyLeft.isDown) {
-      this.setAngle(this.angle - this.angleIncrement)
+      this.angle -= this.angleIncrement
       angleChanged = true
     }
 
     if (this.keyRight.isDown) {
-      this.setAngle(this.angle + this.angleIncrement)
+      this.angle += this.angleIncrement
       angleChanged = true
     }
 
-    if (angleChanged) {
-      this.angle_changed()
-    } else {
-      this.extend_line()
-    }
+    angleChanged ? this.angle_changed() : this.extend_line()
   }
 
   private out_of_bounds_check() {

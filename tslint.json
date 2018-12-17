@@ -11,7 +11,8 @@
     "interface-name": false,
     "newline-before-return": true,
     "arrow-parens": false,
-    "max-line-length" : false
+    "max-line-length" : false,
+    "curly" : false
   },
   "linterOptions": {
     "exclude": ["node_modules/"]
