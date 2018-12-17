@@ -4,14 +4,14 @@ import { Scene1 } from './scenes/Scene1'
 const config: GameConfig = {
   type: Phaser.AUTO,
   width: window.innerWidth,
+  parent: 'game-area',
   height: window.innerHeight,
   physics: {
-      default: 'arcade',
-      arcade: {
-          gravity: { y: 200 },
-      },
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 200 },
+    },
   },
   scene: [Scene1],
 }
-
-const game = new Phaser.Game(config)
+new Phaser.Game(config)

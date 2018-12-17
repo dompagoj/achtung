@@ -1,20 +1,23 @@
 {
-  "extends": ["tslint:latest"],
+  "extends": ["tslint:latest", "tslint-react"],
   "defaultSeverity": "warning",
   "rules": {
-    "quotemark": [true, "single"],
+    "quotemark": [true, "single", "jsx-double"],
     "eofline": true,
     "semicolon": [true, "never"],
+    "jsx-boolean-value": false,
     "no-implicit-dependencies": false,
     "indent": [true, "spaces", 2],
     "object-literal-sort-keys": false,
-    "interface-name": false,
+    "jsx-no-lambda": false,
+    "trailing-comma": false,
+    "no-console": false,
     "newline-before-return": true,
-    "arrow-parens": false,
-    "max-line-length" : false,
-    "curly" : false
+    "interface-name": false,
+    "jsx-no-multiline-js": false,
+    "arrow-parens": false
   },
   "linterOptions": {
-    "exclude": ["node_modules/"]
+    "exclude": ["node_modules/", "src/registerServiceWorker.ts", "./config-overrides.js", "public/main.js"]
   }
 }

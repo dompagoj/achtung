@@ -1,0 +1,9 @@
+.container {
+  display: grid;
+  grid-template-columns: 15% 85%;
+}
+
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+}
