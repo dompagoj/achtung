@@ -1,8 +1,12 @@
 import { GameObjects, Geom, Input, Math as PMath, Scene } from 'phaser'
-import { Coords } from '../Objects/Coords'
+import _ from 'lodash';
 import { Snake } from '../Objects/Snake'
 import { playerStore } from '../../stores/playerStore'
 import { getRandomColor } from '../utils'
+import { sendMessage, setMessageHandler, } from '../../network';
+
+let scene1Singleton: Scene1;
+console.log('process.env.REACT_APP_PLAYER_INDEX!', process.env.REACT_APP_PLAYER_INDEX!)
 
 export class Scene1 extends Scene {
   public snakes: Snake[] = []
@@ -12,7 +16,8 @@ export class Scene1 extends Scene {
   public roundEnded: boolean = false
 
   public constructor() {
-    super({ key: 'Scene1' })
+    super({ key: 'Scene1' });
+    scene1Singleton = this;
   }
 
   public create_snakes() {
@@ -126,5 +131,25 @@ export class Scene1 extends Scene {
       this.snakes[i].update_graphics()
       this.collision_check(this.snakes[i])
     }
+
+
+
+    const stringifiedSnakes = JSON.stringify({
+      playerIndex: parseInt(process.env.REACT_APP_PLAYER_INDEX!),
+      snakes: this.snakes,
+      winner: this.winner,
+      losers: this.losers,
+    });
+
+    sendMessage(stringifiedSnakes);
   }
 }
+
+setMessageHandler((stringifiedScene1) => {
+  const { playerIndex, ...sceneState } = JSON.parse(stringifiedScene1);
+  sceneState.snakes.forEach((snakeSnake, index) => {
+    if (playerIndex !== index) {
+      _.merge(scene1Singleton.snakes[index], snakeSnake);
+    }
+  });
+});

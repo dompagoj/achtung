@@ -6,6 +6,8 @@
     "@types/node": "^10.12.15",
     "@types/react": "^16.7.17",
     "@types/react-dom": "^16.0.11",
+    "@types/websocket": "0.0.40",
+    "lodash": "^4.17.11",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
     "phaser": "^3.15.1",
@@ -13,10 +15,13 @@
     "react-dom": "^16.6.3",
     "react-scripts": "2.1.1",
     "typescript": "^3.2.2",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "websocket": "^1.0.29"
   },
   "scripts": {
     "start": "react-scripts start",
+    "start-player-1": "REACT_APP_PLAYER_INDEX=0 PORT=3001 react-scripts start",
+    "start-player-2": "REACT_APP_PLAYER_INDEX=1 PORT=3002 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
