@@ -1,11 +1,10 @@
-import * as Phaser from 'phaser'
 import { Scene1 } from './scenes/Scene1'
 
-const config: GameConfig = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   parent: 'game-area',
-  height: window.innerHeight,
+  height: 1000,
   physics: {
     default: 'arcade',
     arcade: {

@@ -1,13 +1,13 @@
 import { GameObjects, Geom, Input, Math as PMath, Scene } from 'phaser'
+import { usePlayerStore } from '../../stores/playerStore'
 import { Coords } from '../Objects/Coords'
 import { Snake } from '../Objects/Snake'
-import { playerStore } from '../../stores/playerStore'
 import { getRandomColor } from '../utils'
 
 export class Scene1 extends Scene {
   public snakes: Snake[] = []
   public losers: Snake[] = []
-  public winner: Snake
+  public winner: Snake | null = null
   public pixels: boolean[][] = []
   public roundEnded: boolean = false
 
@@ -16,34 +16,33 @@ export class Scene1 extends Scene {
   }
 
   public create_snakes() {
-    const color1 = getRandomColor()
+    const players = usePlayerStore.getState().players
+    const color1 = Phaser.Display.Color.RGBStringToColor(players[0].snakeColor)
     this.snakes.push(
       new Snake(
         this,
-        playerStore.players[0],
+        players[0],
         color1.color,
         Phaser.Input.Keyboard.KeyCodes.LEFT,
         Phaser.Input.Keyboard.KeyCodes.RIGHT,
         200,
-        200,
-      ),
+        200
+      )
     )
-    console.log(color1.rgba)
-    playerStore.players[0].snakeColor = color1.rgba
 
-    const color2 = getRandomColor()
+    const color2 = Phaser.Display.Color.RGBStringToColor(players[1].snakeColor)
     this.snakes.push(
       new Snake(
         this,
-        playerStore.players[1],
+        players[1],
         color2.color,
         Phaser.Input.Keyboard.KeyCodes.A,
         Phaser.Input.Keyboard.KeyCodes.D,
         200,
-        400,
-      ),
+        400
+      )
     )
-    playerStore.players[1].snakeColor = color2.rgba
+    usePlayerStore.setState({ players })
 
     this.snakes.forEach(snake => {
       this.add.existing(snake)
@@ -67,9 +66,9 @@ export class Scene1 extends Scene {
 
   public calculate_scores() {
     if (!this.roundEnded) {
-      const winnerIndex = playerStore.players.findIndex(player => player.id === this.winner.player.id)
+      const winnerIndex = usePlayerStore.getState().players.findIndex(player => player.id === this.winner?.player.id)
       if (winnerIndex !== -1) {
-        playerStore.players[winnerIndex].score += 3
+        usePlayerStore.getState().addScore(winnerIndex, 3)
       }
     }
   }
@@ -120,7 +119,8 @@ export class Scene1 extends Scene {
     }
   }
 
-  public update(time: number) {
+  public override update(time: number) {
+    if (this.roundEnded) return
     for (let i = 0; i < this.snakes.length; i++) {
       this.snakes[i].move()
       this.snakes[i].update_graphics()

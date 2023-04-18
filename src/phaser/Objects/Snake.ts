@@ -6,35 +6,27 @@ import { IPlayer } from '../../types/Player'
 export class Snake extends Phaser.GameObjects.Sprite {
   public player: IPlayer
   public speedModifier: number = 3
-  public angleIncrement = this.speedModifier / 40
+  public angleIncrement = this.speedModifier / 50
   public lineCompensation = this.speedModifier * 3
   public lineWidth: number = 10
 
   public graphicsLine: GameObjects.Graphics
   public graphicsCircle: GameObjects.Graphics
 
-  public collisionCircle: Geom.Circle
+  public collisionCircle!: Geom.Circle
   public collisionCircleOffset = 1.2 * this.lineCompensation + 2
   public collisionCircleRadius = 5
 
   public lines: Geom.Line[] = []
 
   public isAlive = true
-  private keyLeft: Input.Keyboard.Key
-  private keyRight: Input.Keyboard.Key
+  private keyLeft!: Input.Keyboard.Key
+  private keyRight!: Input.Keyboard.Key
 
-  private xBeforeAngleChange: number
-  private yBeforeAngleChange: number
+  private xBeforeAngleChange!: number
+  private yBeforeAngleChange!: number
 
-  constructor(
-    scene: Scene1,
-    player: IPlayer,
-    color: number,
-    keyLeft: Phaser.Input.Keyboard.KeyCodes,
-    keyRight: Phaser.Input.Keyboard.KeyCodes,
-    x: number,
-    y: number,
-  ) {
+  constructor(scene: Scene1, player: IPlayer, color: number, keyLeft: number, keyRight: number, x: number, y: number) {
     super(scene, x, y, 'snakeHead')
 
     this.setScale(0.1)
@@ -62,7 +54,7 @@ export class Snake extends Phaser.GameObjects.Sprite {
     this.lines.forEach(line => this.graphicsLine.strokeLineShape(line)) // sketchy
   }
 
-  public init_keys(keyLeft: Phaser.Input.Keyboard.KeyCodes, keyRight: Phaser.Input.Keyboard.KeyCodes) {
+  public init_keys(keyLeft: number, keyRight: number) {
     this.keyLeft = this.scene.input.keyboard.addKey(keyLeft)
     this.keyRight = this.scene.input.keyboard.addKey(keyRight)
   }
@@ -75,7 +67,7 @@ export class Snake extends Phaser.GameObjects.Sprite {
       this.xBeforeAngleChange,
       this.yBeforeAngleChange,
       this.x + xCompensation,
-      this.y + yCompensation,
+      this.y + yCompensation
     )
   }
 
@@ -93,7 +85,7 @@ export class Snake extends Phaser.GameObjects.Sprite {
   public update_collision_circle_position() {
     this.collisionCircle.setPosition(
       this.x + Math.cos(this.angle) * this.collisionCircleOffset,
-      this.y + Math.sin(this.angle) * this.collisionCircleOffset,
+      this.y + Math.sin(this.angle) * this.collisionCircleOffset
     )
   }
 
@@ -111,10 +103,6 @@ export class Snake extends Phaser.GameObjects.Sprite {
 
     this.update_collision_circle_position()
     this.out_of_bounds_check()
-  }
-
-  public create_pixel(x: number, y: number) {
-    this.lines.push(new Phaser.Geom.Line(x, y, x + 1, y + 1))
   }
 
   private init_line_creation() {
